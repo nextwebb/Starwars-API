@@ -11,13 +11,14 @@
     "db:seed": "npx prisma db seed --preview-feature",
     "build": "npx tsc",
     "dev": "nodemon --watch 'src/**/*.ts' --exec \"npx ts-node\" src/server.ts",
-    "start": "node build/src/server.js"
+    "start": "node build/src/server.ts"
   },
   "keywords": [],
   "author": "Tri Rizeki Rifandani",
   "license": "MIT",
   "dependencies": {
     "@prisma/client": "^2.19.0",
+    "axios": "^0.21.1",
     "cors": "^2.8.5",
     "express": "^4.17.1",
     "faker": "^5.4.0",
@@ -42,6 +43,7 @@
     "nodemon": "^2.0.7",
     "prisma": "^2.19.0",
     "supertest": "^6.1.3",
+    "swapi-node": "^0.6.0",
     "ts-jest": "^26.5.4",
     "ts-node": "^9.1.1",
     "typescript": "^4.2.3"

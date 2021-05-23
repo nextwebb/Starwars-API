@@ -11,6 +11,7 @@ import {
   postUser,
   putUser,
   deleteUser,
+  getmovies
 } from './controllers/UserController';
 
 // express router
@@ -32,5 +33,12 @@ router.get('/users/:id', getUser);
 router.post('/users', postUser);
 router.put('/users/:id', putUser);
 router.delete('/users/:id', deleteUser);
+
+router.get('/', getHome);
+router.get('/v1/movies/', getmovies);
+router.get('/v1/users/:id', getUser);
+router.post('/v1/users', postUser);
+router.put('/v1/users/:id', putUser);
+router.delete('/v1/users/:id', deleteUser);
 
 export default router;
