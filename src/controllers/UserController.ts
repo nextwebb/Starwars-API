@@ -4,6 +4,8 @@ import prisma from '../services/prismaClient';
 import logger from '../utils/winstonLogger';
 import axios from 'axios'
 import { type } from 'node:os';
+import { stringify } from 'node:querystring';
+import { runInThisContext } from 'node:vm';
 
 // GET /users
 export const getUsers = async (_: Request, res: Response): Promise<void> => {
@@ -89,6 +91,14 @@ export const getcharacter = async (req: Request, res: Response): Promise<void> =
     const {sort_by, order, filter} = req.query || {};
 
     console.log(sort_by, order, filter)
+    
+// convert cm to ft/inches
+    const  toFeet =(n:number) => {
+      const realFeet = ((n*0.393700) / 12);
+      const feet = Math.floor(realFeet);
+      const inches = Math.round((realFeet - feet) * 12);
+      return feet + "ft/" + inches + 'inches';
+    }
 
 
     axios.get('https://swapi.dev/api/people/')
@@ -96,8 +106,10 @@ export const getcharacter = async (req: Request, res: Response): Promise<void> =
      
 // filter
       const dataArray = result.data.results.filter((character:{
-        gender: string
+        gender: string,
+        height: number,
       })=>{
+        character.height = Number(character.height)
         return character.gender === filter || character.gender === filter;
       })
       // console.log(dataArray)
@@ -105,44 +117,64 @@ export const getcharacter = async (req: Request, res: Response): Promise<void> =
      if (order === "desc" && sort_by  === "height"){
 
       const sortedDesc = dataArray.sort((a: { height: number; }, b: { height: number; }) => b.height - a.height)
-      
-      console.log("descending",sortedDesc)
+      const metadata = {
+        count: sortedDesc.length
+      } 
+      console.log("descending",metadata,sortedDesc)
 
       res.status(200);
-      res.json({ success: true, sortedDesc });
+      res.json({ success: true,metadata, sortedDesc });
       
     }
 
     if (order === "asc" && sort_by  === "height"){
 
       const sortedAsc = dataArray.sort((a: { height: number; }, b: { height: number; }) => a.height -  b.height)
-
-      console.log("ascending",sortedAsc)
+      const metadata = {
+        count: sortedAsc.length
+      } 
+      console.log("ascending", metadata, sortedAsc)
       res.status(200);
-      res.json({ success: true, sortedAsc });
+      res.json({ success: true,metadata, sortedAsc });
       
     }
 
     if (order === "asc" && sort_by  == "name" || sort_by == "gender"){
 
 
-      const sortedDesc = dataArray.sort((a:{name:string, gender:string}, b:{name:string, gender:string}) => a.name.localeCompare(b.name) || b.gender.localeCompare(a.gender));
+      const sortedAsc = dataArray.sort((a:{name:string, gender:string}, b:{name:string, gender:string}) => a.name.localeCompare(b.name) || a.gender.localeCompare(b.gender));
+      const metadata = {
+        count: sortedAsc.length
+      } 
       
-      console.log("descending",sortedDesc)
+      console.log("descending",metadata, sortedAsc)
 
       res.status(200);
-      res.json({ success: true, sortedDesc });
+      res.json({ success: true,metadata, sortedAsc });
       return;
     }
 
-    if (order === "asc" && sort_by  === "name" || sort_by === "gender"){
-
-      const sortedAsc = dataArray.sort((a:{name:string, gender:string}, b:{name:string, gender:string}) => b.name.localeCompare(a.name) || b.gender.localeCompare(a.gender));
+    if (order === "desc" && sort_by  === "name" || sort_by === "gender"){
+``
+      const sortedDesc = dataArray.sort((a:{name:string, gender:string}, b:{name:string, gender:string}) => b.name.localeCompare(a.name) || b.gender.localeCompare(a.gender));
+      console.log( parseInt(sortedDesc[0].height) + parseInt(sortedDesc[1].height))
+      const metadata = {
+        count: sortedDesc.length,
+        total_height: {
+          cm: sortedDesc.reduce((sum: number,b:{ height: number})=> {
+          return sum + b.height 
+        },0),
+        feet: ""
+      }  
+      } 
       
-      console.log("descending",sortedAsc)
+      metadata.total_height.feet =  toFeet(metadata.total_height.cm)
+      metadata.total_height.cm = metadata.total_height.cm +"cm"
+      
+      console.log("descending",metadata, sortedDesc)
 
       res.status(200);
-      res.json({ success: true, sortedAsc });
+      res.json({ success: true, metadata, sortedDesc });
     }
   })
     .catch((error)=> {
