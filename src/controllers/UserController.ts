@@ -118,8 +118,18 @@ export const getcharacter = async (req: Request, res: Response): Promise<void> =
 
       const sortedDesc = dataArray.sort((a: { height: number; }, b: { height: number; }) => b.height - a.height)
       const metadata = {
-        count: sortedDesc.length
+        count: sortedDesc.length,
+        total_height: {
+          cm: sortedDesc.reduce((sum: number,b:{ height: number})=> {
+          return sum + b.height 
+        },0),
+        feet: ""
+      }  
       } 
+      
+      metadata.total_height.feet =  toFeet(metadata.total_height.cm)
+      metadata.total_height.cm = metadata.total_height.cm +"cm"
+      
       console.log("descending",metadata,sortedDesc)
 
       res.status(200);
@@ -131,8 +141,18 @@ export const getcharacter = async (req: Request, res: Response): Promise<void> =
 
       const sortedAsc = dataArray.sort((a: { height: number; }, b: { height: number; }) => a.height -  b.height)
       const metadata = {
-        count: sortedAsc.length
+        count: sortedAsc.length,
+        total_height: {
+          cm: sortedAsc.reduce((sum: number,b:{ height: number})=> {
+          return sum + b.height 
+        },0),
+        feet: ""
+      }  
       } 
+      
+      metadata.total_height.feet =  toFeet(metadata.total_height.cm)
+      metadata.total_height.cm = metadata.total_height.cm +"cm"
+
       console.log("ascending", metadata, sortedAsc)
       res.status(200);
       res.json({ success: true,metadata, sortedAsc });
@@ -144,8 +164,17 @@ export const getcharacter = async (req: Request, res: Response): Promise<void> =
 
       const sortedAsc = dataArray.sort((a:{name:string, gender:string}, b:{name:string, gender:string}) => a.name.localeCompare(b.name) || a.gender.localeCompare(b.gender));
       const metadata = {
-        count: sortedAsc.length
+        count: sortedAsc.length,
+        total_height: {
+          cm: sortedAsc.reduce((sum: number,b:{ height: number})=> {
+          return sum + b.height 
+        },0),
+        feet: ""
+      }  
       } 
+      
+      metadata.total_height.feet =  toFeet(metadata.total_height.cm)
+      metadata.total_height.cm = metadata.total_height.cm +"cm"
       
       console.log("descending",metadata, sortedAsc)
 
