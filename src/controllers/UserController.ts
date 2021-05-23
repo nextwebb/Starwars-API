@@ -3,6 +3,7 @@ import { Request, Response } from 'express';
 import prisma from '../services/prismaClient';
 import logger from '../utils/winstonLogger';
 import axios from 'axios'
+import { type } from 'node:os';
 
 // GET /users
 export const getUsers = async (_: Request, res: Response): Promise<void> => {
@@ -63,14 +64,96 @@ export const getmovies = async (req: Request, res: Response): Promise<void> => {
 
       const sortedActivities = dataArray.sort((a: { release_date: number; }, b: { release_date: number; }) => b.release_date - a.release_date)
 
-      console.log(sortedActivities);
+      // console.log(sortedActivities);
       res.status(200);
-      res.json({ success: true, result });
+      res.json({ success: true, sortedActivities });
   }).catch((error) => {
-    console.log(error.message);
+    // console.log(error.message);
+    res.status(401);
+    res.json({ success: true, error: error.message });
   })
     // });
   } catch (err) {
+    logger.error('GET /movies/ prisma error');
+    res.status(500);
+    res.json({ success: false, msg: err.message, err });
+  } finally {
+    await prisma.$disconnect();
+  }
+};
+
+// GET /characters?sort_by=name|gender\height&order=asc\des&filter=male\female
+export const getcharacter = async (req: Request, res: Response): Promise<void> => {
+  try {
+
+    const {sort_by, order, filter} = req.query || {};
+
+    console.log(sort_by, order, filter)
+
+
+    axios.get('https://swapi.dev/api/people/')
+    .then((result) => {
+     
+// filter
+      const dataArray = result.data.results.filter((character:{
+        gender: string
+      })=>{
+        return character.gender === filter || character.gender === filter;
+      })
+      // console.log(dataArray)
+// sort \ name \ gender \ height
+     if (order === "desc" && sort_by  === "height"){
+
+      const sortedDesc = dataArray.sort((a: { height: number; }, b: { height: number; }) => b.height - a.height)
+      
+      console.log("descending",sortedDesc)
+
+      res.status(200);
+      res.json({ success: true, sortedDesc });
+      
+    }
+
+    if (order === "asc" && sort_by  === "height"){
+
+      const sortedAsc = dataArray.sort((a: { height: number; }, b: { height: number; }) => a.height -  b.height)
+
+      console.log("ascending",sortedAsc)
+      res.status(200);
+      res.json({ success: true, sortedAsc });
+      
+    }
+
+    if (order === "asc" && sort_by  == "name" || sort_by == "gender"){
+
+
+      const sortedDesc = dataArray.sort((a:{name:string, gender:string}, b:{name:string, gender:string}) => a.name.localeCompare(b.name) || b.gender.localeCompare(a.gender));
+      
+      console.log("descending",sortedDesc)
+
+      res.status(200);
+      res.json({ success: true, sortedDesc });
+      return;
+    }
+
+    if (order === "asc" && sort_by  === "name" || sort_by === "gender"){
+
+      const sortedAsc = dataArray.sort((a:{name:string, gender:string}, b:{name:string, gender:string}) => b.name.localeCompare(a.name) || b.gender.localeCompare(a.gender));
+      
+      console.log("descending",sortedAsc)
+
+      res.status(200);
+      res.json({ success: true, sortedAsc });
+    }
+  })
+    .catch((error)=> {
+      console.log(error)
+      res.status(401);
+      res.json({ success: true, error: error.message });
+    })
+
+    
+  } catch (err) {
+    console.log(err)
     logger.error('GET /users/:id prisma error');
     res.status(500);
     res.json({ success: false, msg: err.message, err });

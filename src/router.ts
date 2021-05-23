@@ -11,7 +11,8 @@ import {
   postUser,
   putUser,
   deleteUser,
-  getmovies
+  getmovies,
+  getcharacter
 } from './controllers/UserController';
 
 // express router
@@ -36,7 +37,7 @@ router.delete('/users/:id', deleteUser);
 
 router.get('/', getHome);
 router.get('/v1/movies/', getmovies);
-router.get('/v1/users/:id', getUser);
+router.get('/v1/characters/', getcharacter);
 router.post('/v1/users', postUser);
 router.put('/v1/users/:id', putUser);
 router.delete('/v1/users/:id', deleteUser);
