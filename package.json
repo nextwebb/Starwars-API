@@ -11,7 +11,7 @@
     "db:seed": "npx prisma db seed --preview-feature",
     "build": "npx tsc",
     "dev": "nodemon --watch 'src/**/*.ts' --exec \"npx ts-node\" src/server.ts",
-    "start": "node build/src/server.ts"
+    "start": "node build/src/server.js"
   },
   "keywords": [],
   "author": "Tri Rizeki Rifandani",

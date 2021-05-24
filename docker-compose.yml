@@ -16,7 +16,13 @@ services:
 
   web:
     build: .
-    # use my own custom image
+    command: >
+      bash -c "
+      npm i --save-dev prisma                              │
+      && npm i @prisma/client     
+      && npx prisma generate
+      && npx prisma migrate dev
+      "
     image: starwarsapi
     # make sure it starts postgres first
     depends_on:
