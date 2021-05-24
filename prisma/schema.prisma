@@ -7,10 +7,10 @@ generator client {
   provider = "prisma-client-js"
 }
 
-model User {
-  id        Int      @id  @default(autoincrement())
-  name      String
-  age       Int
+model Comment {
+  id        Int      @id @default(autoincrement())
+  content   String
+  ip        Int
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  movie     String
 }
