@@ -83,15 +83,26 @@ Hello world
 ```
 
 
-## Run the docker compose
-Setting it using docker-compose
-
+### Setting it using docker-compose
 The application can be run using docker also, you should the following installed
 
-    [docker]()
-    [docker compose]()
+1. [docker](https://www.docker.com/get-started)
+2. [docker compose](https://docs.docker.com/compose/install/)
 
-    ``run docker-compose build`` to build the docker image
-    ``run docker-compose up -d`` to run the docker container
+
+- run ```docker-compose build ``` to build the docker image
+- run ```docker-compose up -d``` to run the docker container
 
 Application runs on port 8000
+
+
+### Set up the back-end  locally
+- In the root project folder create a file called ```.env``` and fill it with the content in the ```.env.example``` file.
+- Install debependencies 
+```npm install```
+- Spin Up postgres container
+``` docker-compose -f postgres.yaml up ```
+- Build application
+``` npm run build ```
+- Run application
+``` npm start ```
