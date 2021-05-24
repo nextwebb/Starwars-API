@@ -7,10 +7,11 @@ let timeout: NodeJS.Timeout;
 async function seed(num: number) {
   for (let i = 0; i < num; i++) {
     timeout = setTimeout(async () => {
-      const user = await prisma.user.create({
+      const user = await prisma.comment.create({
         data: {
-          name: name.findName(),
-          age: random.number(70),
+          content: name.findName(),
+          movie: random.movie(70),
+
         },
       });
 

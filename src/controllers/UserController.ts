@@ -3,45 +3,7 @@ import { Request, Response } from 'express';
 import prisma from '../services/prismaClient';
 import logger from '../utils/winstonLogger';
 import axios from 'axios'
-import { type } from 'node:os';
-import { stringify } from 'node:querystring';
-import { runInThisContext } from 'node:vm';
-
-// GET /users
-export const getUsers = async (_: Request, res: Response): Promise<void> => {
-  try {
-    const users = await prisma.user.findMany();
-
-    res.status(200);
-    res.json({ success: true, users });
-  } catch (err) {
-    logger.error('GET /users prisma error');
-    res.status(500);
-    res.json({ success: false, msg: err.message, err });
-  } finally {
-    await prisma.$disconnect();
-  }
-};
-
-// GET /users/:id
-export const getUser = async (req: Request, res: Response): Promise<void> => {
-  try {
-    const user = await prisma.user.findUnique({
-      where: {
-        id: parseInt(req.params?.id),
-      },
-    });
-
-    res.status(200);
-    res.json({ success: true, user });
-  } catch (err) {
-    logger.error('GET /users/:id prisma error');
-    res.status(500);
-    res.json({ success: false, msg: err.message, err });
-  } finally {
-    await prisma.$disconnect();
-  }
-};
+import ip from 'ip';
 
 // GET /movies/:created
 export const getmovies = async (req: Request, res: Response): Promise<void> => {
@@ -51,22 +13,36 @@ export const getmovies = async (req: Request, res: Response): Promise<void> => {
       // opening crawls
       // release_date
       // counts_of_comments
+      
+
       const dataArray = result.data.results.map((movie: {             
         release_date: string | number | Date;
         title: string;
         opening_crawl: string;
        })=>{
         movie.release_date = new Date(movie.release_date)
+        
+
         return {
           title: movie.title,
           opening_crawl : movie.opening_crawl,
-          release_date: movie.release_date
+          release_date: movie.release_date,
+          counts_of_comments:""
         }
       })
 
       const sortedActivities = dataArray.sort((a: { release_date: number; }, b: { release_date: number; }) => b.release_date - a.release_date)
 
-      // console.log(sortedActivities);
+     const movieCommentCount = sortedActivities.map(async(movie:{title: string})=> {
+       await prisma.comment.findMany({
+          where: { movie: movie.title }
+        }) 
+      })
+     
+      movieCommentCount.counts_of_comments = movieCommentCount.length
+      // console.log(movieCommentCount.length)
+
+      console.log(sortedActivities);
       res.status(200);
       res.json({ success: true, sortedActivities });
   }).catch((error) => {
@@ -90,7 +66,7 @@ export const getcharacter = async (req: Request, res: Response): Promise<void> =
 
     const {sort_by, order, filter} = req.query || {};
 
-    console.log(sort_by, order, filter)
+    // console.log(sort_by, order, filter)
     
 // convert cm to ft/inches
     const  toFeet =(n:number) => {
@@ -129,8 +105,8 @@ export const getcharacter = async (req: Request, res: Response): Promise<void> =
       
       metadata.total_height.feet =  toFeet(metadata.total_height.cm)
       metadata.total_height.cm = metadata.total_height.cm +"cm"
-      
-      console.log("descending",metadata,sortedDesc)
+
+      // console.log("descending",metadata,sortedDesc)
 
       res.status(200);
       res.json({ success: true,metadata, sortedDesc });
@@ -153,7 +129,7 @@ export const getcharacter = async (req: Request, res: Response): Promise<void> =
       metadata.total_height.feet =  toFeet(metadata.total_height.cm)
       metadata.total_height.cm = metadata.total_height.cm +"cm"
 
-      console.log("ascending", metadata, sortedAsc)
+      // console.log("ascending", metadata, sortedAsc)
       res.status(200);
       res.json({ success: true,metadata, sortedAsc });
       
@@ -176,7 +152,7 @@ export const getcharacter = async (req: Request, res: Response): Promise<void> =
       metadata.total_height.feet =  toFeet(metadata.total_height.cm)
       metadata.total_height.cm = metadata.total_height.cm +"cm"
       
-      console.log("descending",metadata, sortedAsc)
+      // console.log("descending",metadata, sortedAsc)
 
       res.status(200);
       res.json({ success: true,metadata, sortedAsc });
@@ -184,7 +160,7 @@ export const getcharacter = async (req: Request, res: Response): Promise<void> =
     }
 
     if (order === "desc" && sort_by  === "name" || sort_by === "gender"){
-``
+      
       const sortedDesc = dataArray.sort((a:{name:string, gender:string}, b:{name:string, gender:string}) => b.name.localeCompare(a.name) || b.gender.localeCompare(a.gender));
       console.log( parseInt(sortedDesc[0].height) + parseInt(sortedDesc[1].height))
       const metadata = {
@@ -200,7 +176,7 @@ export const getcharacter = async (req: Request, res: Response): Promise<void> =
       metadata.total_height.feet =  toFeet(metadata.total_height.cm)
       metadata.total_height.cm = metadata.total_height.cm +"cm"
       
-      console.log("descending",metadata, sortedDesc)
+      // console.log("descending",metadata, sortedDesc)
 
       res.status(200);
       res.json({ success: true, metadata, sortedDesc });
@@ -214,7 +190,7 @@ export const getcharacter = async (req: Request, res: Response): Promise<void> =
 
     
   } catch (err) {
-    console.log(err)
+    // console.log(err)
     logger.error('GET /users/:id prisma error');
     res.status(500);
     res.json({ success: false, msg: err.message, err });
@@ -223,22 +199,30 @@ export const getcharacter = async (req: Request, res: Response): Promise<void> =
   }
 };
 
-// POST /users
-export const postUser = async (req: Request, res: Response): Promise<void> => {
+// POST /comments
+export const postCommment = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { name, age } = req.body;
+    const truncateString = (str:string, num:number) => {
+      if (str.length > num) {
+        return str.slice(0, num) + "...";
+      } else {
+        return str;
+      }
+    }
+    const { comment, movie_title } = req.body || {};
 
-    const user = await prisma.user.create({
+    const movieComment = await prisma.comment.create({
       data: {
-        name,
-        age,
+        content: truncateString(comment, 500),
+        movie:movie_title,
+        ip: ip.address()
       },
     });
-
+    // console.log(movieComment)
     res.status(200);
-    res.json({ success: true, user });
+    res.json({ success: true, movieComment });
   } catch (err) {
-    logger.error('POST /users prisma error');
+    logger.error('POST /comments prisma error');
     res.status(500);
     res.json({ success: false, msg: err.message, err });
   } finally {
@@ -246,52 +230,18 @@ export const postUser = async (req: Request, res: Response): Promise<void> => {
   }
 };
 
-// PUT /users/:id
-export const putUser = async (req: Request, res: Response): Promise<void> => {
+// GET /comments``
+export const getcomments = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { name, age } = req.body;
-
-    // TODO: check first if user exists biar gak error 500
-
-    const user = await prisma.user.update({
-      where: {
-        id: parseInt(req.params?.id),
-      },
-      data: {
-        name,
-        age,
-      },
-    });
-
+    const movieComment = await prisma.comment.findMany({
+      orderBy: { createdAt: 'desc' }
+    }
+    );
+    // console.log(movieComment)
     res.status(200);
-    res.json({ success: true, user });
+    res.json({ success: true, movieComment });
   } catch (err) {
-    logger.error('PUT /users/:id prisma error');
-    res.status(500);
-    res.json({ success: false, msg: err.message, err });
-  } finally {
-    await prisma.$disconnect();
-  }
-};
-
-// DELETE /users/:id
-export const deleteUser = async (
-  req: Request,
-  res: Response
-): Promise<void> => {
-  try {
-    // TODO: check first if user exists biar gak error 500
-
-    const user = await prisma.user.delete({
-      where: {
-        id: parseInt(req.params?.id),
-      },
-    });
-
-    res.status(200);
-    res.json({ success: true, user });
-  } catch (err) {
-    logger.error('DELETE /users/:id prisma error');
+    logger.error('GET /comments prisma error');
     res.status(500);
     res.json({ success: false, msg: err.message, err });
   } finally {
