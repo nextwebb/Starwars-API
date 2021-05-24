@@ -76,8 +76,22 @@ X-Powered-By: Express
 Content-Type: text/html; charset=utf-8
 Content-Length: 12
 ETag: W/"c-M6tWOb/Y57lesdjQuHeB1P/qTV0"
-Date: Mon, 13 Nov 2017 20:53:59 GMT
+Date: Mon, 24 May 2021 20:53:59 GMT
 Connection: keep-alive
 
 Hello world
 ```
+
+
+## Run the docker compose
+Setting it using docker-compose
+
+The application can be run using docker also, you should the following installed
+
+    [docker]()
+    [docker compose]()
+
+    ``run docker-compose build`` to build the docker image
+    ``run docker-compose up -d`` to run the docker container
+
+Application runs on port 8000
