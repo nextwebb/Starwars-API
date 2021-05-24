@@ -191,7 +191,7 @@ export const getcharacter = async (req: Request, res: Response): Promise<void> =
     
   } catch (err) {
     // console.log(err)
-    logger.error('GET /users/:id prisma error');
+    logger.error('GET /characters/ prisma error');
     res.status(500);
     res.json({ success: false, msg: err.message, err });
   } finally {
