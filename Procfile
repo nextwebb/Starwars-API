@@ -1,2 +1,2 @@
 web: npm start
-release: npm run db:migrate
+release: npx prisma db push --preview-feature
