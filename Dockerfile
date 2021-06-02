@@ -40,6 +40,8 @@ FROM base as prod
 RUN npm ci --production
 COPY . .
 ENV NODE_ENV=production
+ENV DATABASE_URL=postgresql://pguser:pgpass@postgres/mydb?schema=mydb
+
 RUN npm run build
 EXPOSE 8000
 CMD [ "node", "build/src/server.js"]

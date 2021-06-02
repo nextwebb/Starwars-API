@@ -1,34 +1,35 @@
-version: '3.8'
-
+# This file defines two services: The db service and the web service.
 services:
-  # make sure implements retry connectDB 5 times each 5s
   db:
-    image: postgres:latest
+    # container_name: postgres
+    image: postgres
     environment:
-      POSTGRES_PASSWORD: user
-      POSTGRES_USER: user
+      POSTGRES_PASSWORD: pguser
+      POSTGRES_USER: pgpass
       POSTGRES_DB: mydb
     volumes:
-      # - ./pgdata:/var/lib/postgresql/data
-      - pgdata:/var/lib/postgresql/data
+      # no data is lost  when we stop running the container, only for development
+      - ./pgdata:/var/lib/postgresql/data
     ports:
-      - '5432:5432'
-
+      # exposing port 5555 to the host machine
+      - '5555:5432'
   web:
+    # env_file:
+    #   - ./.env
     build: .
     command: >
       bash -c "
-      npm i --save-dev prisma                              │
-      && npm i @prisma/client     
-      && npx prisma generate
-      && npx prisma migrate dev
+      npx prisma migrate dev
       "
-    image: starwarsapi
-    # make sure it starts postgres first
+    # container_name: appserver
+    image: appserver
+    # for development purposes, so when we make changes to the source code the change gets saved to the container.
+    volumes:
+      - .:/appserver
+
+    network_mode: 'bridge'
     depends_on:
       - db
     ports:
+      # expose port 8001 to the host machine
       - '8000:8000'
-
-volumes:
-  pgdata:
