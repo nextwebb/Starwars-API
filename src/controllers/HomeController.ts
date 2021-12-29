@@ -11,5 +11,5 @@ export const getHome = (
   // next: NextFunction
 ): void => {
   res.status(200);
-  res.json({ success: true, msg: 'Welcome to /home' });
+  res.json({ success: true, msg: 'Welcome to starwars API /home' });
 };
