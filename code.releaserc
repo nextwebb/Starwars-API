@@ -1,0 +1,4 @@
+module.exports = {
+    repositoryUrl: 'https://github.com/semantic-release/semantic-release.git',
+    branches: ['main'],
+}
