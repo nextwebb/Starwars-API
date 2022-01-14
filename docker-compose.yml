@@ -1,0 +1,35 @@
+# This file defines two services: The db service and the web service.
+services:
+  db:
+    # container_name: postgres
+    image: postgres
+    environment:
+      POSTGRES_PASSWORD: pguser
+      POSTGRES_USER: pgpass
+      POSTGRES_DB: mydb
+    volumes:
+      # no data is lost  when we stop running the container, only for development
+      - ./pgdata:/var/lib/postgresql/data
+    ports:
+      # exposing port 5555 to the host machine
+      - '5555:5432'
+  web:
+    # env_file:
+    #   - ./.env
+    build: .
+    command: >
+      bash -c "
+      npx prisma migrate dev
+      "
+    # container_name: appserver
+    image: appserver
+    # for development purposes, so when we make changes to the source code the change gets saved to the container.
+    volumes:
+      - .:/appserver
+
+    network_mode: 'bridge'
+    depends_on:
+      - db
+    ports:
+      # expose port 8001 to the host machine
+      - '8000:8000'
