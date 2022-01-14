@@ -12,7 +12,7 @@ services:
       # allow connections from the host machine
       # an instance of the postgres image = postgres_docker(container)
     network_mode: bridge # port available on localhost 
-    container_name: postgres_docker
+    container_name: postgres_starwars_docker
 
     environment:
       POSTGRES_USER: 'postgres'
